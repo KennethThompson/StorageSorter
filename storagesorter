@@ -66,6 +66,60 @@ function processQueryCmd(idFrom)
 
 end
 
+
+function dump()
+		local found
+		local dirs = { 0, 1, 2, 3, 4, 5 }
+		local b, sort = locateSorter()
+		local nestedStacks = {}
+	
+		for i, dir in ipairs(dirs) do
+			local stacks = {}
+			local t = nill
+			local cont = true
+			while ( cont == true ) do
+				local b = peripheral.call(sort, "list", dir)
+				p = peripheral.wrap(sort)
+				
+				if ( b ~= nill ) then
+					print( "dumping.. ")
+					--print(to_string(peripheral.getMethods(sort)))
+					--local totalItemCount = 0
+					--local curUUID = nil
+					--local tmd = pairs(b)
+					--print( to_string(b))
+					if #to_string(b) == 0 then
+						cont = false
+					--	print("dont continue .." .. dir)
+						
+					end
+						for uuid,count in pairs(b) do
+							--curUUID = uuid
+							--totalItemCount = totalItemCount + count
+							--print( "UID " .. uuid .. " Count = " .. count )
+							
+							if ( count ~= 0 ) then
+								       for i=1, count do
+								       p.extract(2,uuid,2,1)
+								       if i%10 == 0 then
+								         print("Processed " .. i .. " items.")
+								         sleep(.1)
+								       end
+								       end
+							--	p.extract(dir,uuid,2,count)
+								else
+									cont = false
+							end
+							--	sleep(1)
+						end
+					else
+					--	print("dont continue" .. dir)
+						cont = false
+				end
+			end
+		end
+end
+
 function processGetCmd(idFrom, ct, cmd)
 	local b, s = locateSorter()
 	local cmdt = textutils.unserialize(cmd)
@@ -475,7 +529,7 @@ rednet.open("right")
 mainLoop = function()
 	print ("Main loop started")
 	while true do
-		id, message  = rednet.receive(10)
+		id, message  = rednet.receive(1)
 		if id ~= nill then
 			local b, c
 			b, ct, c = validateWeeblerMsg(message)
@@ -488,32 +542,12 @@ mainLoop = function()
 				print("Received an invalid message")
 			end
 		end
-		sleep(1)
+		dump()
+		--sleep(1)
 	end
 end
 
-doExtract = function()
-while true do
-b, r = getStacks("back", 2)
-print("processing ")	
-for i,v in pairs(r) do
-       p = peripheral.wrap("top")
-       if v.id == 999999 then
-         p.extract(2,v.uuid,1,v.amount)
-         v.amount = 0
-       end
-       for i=1,v.amount do
-       p.extract(2,v.uuid,1,1)
-       if i%10 == 0 then
-         print("Processed " .. i .. " items.")
-         sleep(.1)
-       end
-       end
-     print("found an item")
-       --monitorWrite("Processing " .. v.uuid, cX, cY)
-     sleep(.1)      
-end
-end
+
 
 print("Starting...")
 myItems = loadTable("stuff")
