@@ -452,9 +452,9 @@ doSorter = function()
 		local keep = pushItem(param, param2)
 		--print(count)
 		if ( keep == true ) then
-			p.sort(2)
+			p.sort(1)
 		else
-			p.sort(3)
+			p.sort(0)
 		end
 		--data = m.list(1)
 		--for j, k in pairs(data) do
@@ -490,6 +490,29 @@ mainLoop = function()
 		end
 		sleep(1)
 	end
+end
+
+doExtract = function()
+while true do
+b, r = getStacks("back", 2)
+print("processing ")	
+for i,v in pairs(r) do
+       p = peripheral.wrap("top")
+       if v.id == 999999 then
+         p.extract(2,v.uuid,1,v.amount)
+         v.amount = 0
+       end
+       for i=1,v.amount do
+       p.extract(2,v.uuid,1,1)
+       if i%10 == 0 then
+         print("Processed " .. i .. " items.")
+         sleep(.1)
+       end
+       end
+     print("found an item")
+       --monitorWrite("Processing " .. v.uuid, cX, cY)
+     sleep(.1)      
+end
 end
 
 print("Starting...")
