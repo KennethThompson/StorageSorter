@@ -476,6 +476,8 @@ function serlTable(table,name)
 end
 
 function loadTable(name)
+	if (fs.exists(name) ~= true)
+		return nil
 	local file = fs.open(name,"r")
 	local data = file.readAll()
 	file.close()
