@@ -100,7 +100,7 @@ function dump()
 							
 							if ( count ~= 0 ) then
 								       for i=1, count do
-								       p.extract(2,uuid,2,1)
+								       p.extract(dir,uuid,2,1)
 								       if i%10 == 0 then
 								         print("Processed " .. i .. " items.")
 								         sleep(.1)
