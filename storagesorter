@@ -481,7 +481,7 @@ mainLoop = function()
 			b, ct, c = validateWeeblerMsg(message)
 			if  (b == true ) then
 				--print("Received a valid message, processing command: " .. message )
-				--print(id)
+				print("Received a message from " .. id)
 			--	transferContents( 2, 1)
 				processCmd( id, ct, c)
 				else
