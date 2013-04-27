@@ -489,7 +489,7 @@ doSave = function()
 	while (true) do
 		if (myItems ~= nil ) then
 			serlTable(myItems, "stuff")
-			--print( "Saving " .. #myItems .. " items." )
+			print( "Saving " .. #myItems .. " items." )
 		end
 		
 		sleep(5)
