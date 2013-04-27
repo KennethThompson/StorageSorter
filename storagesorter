@@ -40,7 +40,7 @@ function processRestartCmd(idFrom)
 end
 
 function sendCmd( toid, cmd )
-	print( "Sending [ " .. #cmd .. "], to ID " .. toid )
+	--print( "Sending [ " .. #cmd .. "], to ID " .. toid )
 	if (toid == 0) then
 		rednet.broadcast(msg)
 		else
@@ -82,7 +82,7 @@ function dump()
 				p = peripheral.wrap(sort)
 				
 				if ( b ~= nill ) then
-					print( "dumping.. ")
+					--print( "dumping.. ")
 					--print(to_string(peripheral.getMethods(sort)))
 					--local totalItemCount = 0
 					--local curUUID = nil
