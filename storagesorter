@@ -485,11 +485,18 @@ function loadTable(name)
 	return textutils.unserialize(data)
 end
 
+function tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
 doSave = function()
 	while (true) do
-		if (myItems ~= nil ) then
+		local tcount = tablelength(myItems)
+		if (myItems ~= nil and tcount > 0 ) then
 			serlTable(myItems, "stuff")
-			print( "Saving " .. #myItems .. " items." )
+			print( "Saving " .. tcount .. " items." )
 		end
 		
 		sleep(5)
