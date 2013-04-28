@@ -1,5 +1,5 @@
 local itemTable = {}
-
+local screens = {}
 -- Functions
 -- function serlTable(table,name)
   -- --local file = fs.open(name,"w")
@@ -185,7 +185,27 @@ function processGetCmd(idFrom, ct, cmd)
 	sendCmd(idFrom, msg)	
 	return false
 end
-
+function processGetResponse(cmd)
+	print("command = " .. cmd)
+	local tmp = textutils.unserialize(cmd )
+	--print(to_string(tmp))
+	if( tmp ~= nil ) then
+		--print("popping " .. tmp.amount )
+		if( tmp.amount == 0 ) then
+			popItem( tmp.uuid, 0, true )
+			else
+				
+				popItem( tmp.uuid, tmp.amount, false )
+		end
+		
+	end
+	
+	--print(to_string(tmp))
+	--currentResult = {}
+	--currentResult.result = tmp.result
+	--currentResult.msg = tmp.msg
+	
+end
 
 function processCmd(idFrom, ct, cmd)
 --for i,v in pairs(explode("|", ct)) do
@@ -199,7 +219,13 @@ function processCmd(idFrom, ct, cmd)
 			sleep(5)
 			processRestartCmd(idFrom);
 		end
-
+		if( ct:lower() == "getresponse" ) then
+			print("GetResponse received!")
+			processGetResponse(cmd)
+			--
+			--sleep(5)
+			--processRestartCmd(idFrom);
+		end
 	--end
 end
 
@@ -480,7 +506,39 @@ function pushItem( itemuuid, amt )
 		return true
 	end
 end
-
+function popItem( itemuuid, amt, override ) --I shouldn't call it pop, as it just decrements the count, but whatever.
+	--local found = false
+	for k,v in pairs(myItems) do
+		if (k == itemuuid) then
+			found = true
+			--if( myItems[itemuuid].count ~= nil and myItems[itemuuid].count >= myItems[itemuuid].maxcount ) then
+			--	print("Found the item type for " .. itemuuid .. ", but we have too many already, max = " .. myItems[itemuuid].maxcount .. " current count = " .. myItems[itemuuid].count)
+			--	return false
+			--end
+			if ( override == true ) then
+			-- this is a condition where we somehow got unsynced with the barell and nows its time to adjust the count
+				myItems[itemuuid].count = amt
+				else
+				myItems[itemuuid].count = myItems[itemuuid].count - amt
+				if ( myItems[itemuuid].count < 0 ) then
+					myItems[itemuuid].count = 0 -- just to be safe!
+				end
+			end
+			
+			--print("Found the item type for " .. itemuuid .. ", adding ".. amt .. "total is now ".. myItems[itemuuid].count)
+			return true
+		end
+	end
+	-- if (found ~= true) then
+		-- local newitem = {}
+		-- newitem.uuid = itemuuid;
+		-- newitem.count = amt;
+		-- newitem.maxcount = 65535
+		-- table.insert(myItems, itemuuid, newitem) 
+		-- print("New index added for item type for " .. itemuuid .. ", adding ".. amt)
+		-- return true
+	-- end
+end
 -- Functions
 function serlTable(table,name)
   local file = fs.open(name,"w")
@@ -559,6 +617,7 @@ mainLoop = function()
 		id, message  = rednet.receive(1)
 		if id ~= nill then
 			local b, c
+			--print(message)
 			b, ct, c = validateWeeblerMsg(message)
 			if  (b == true ) then
 				--print("Received a valid message, processing command: " .. message )
