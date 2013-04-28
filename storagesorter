@@ -77,10 +77,10 @@ function dump()
 			local stacks = {}
 			local t = nill
 			local cont = true
+			
 			while ( cont == true ) do
 				local b = peripheral.call(sort, "list", dir)
 				p = peripheral.wrap(sort)
-				
 				if ( b ~= nill ) then
 					--print( "dumping.. ")
 					--print(to_string(peripheral.getMethods(sort)))
@@ -99,13 +99,26 @@ function dump()
 							--print( "UID " .. uuid .. " Count = " .. count )
 							
 							if ( count ~= 0 ) then
-								       for i=1, count do
-								       p.extract(dir,uuid,2,1)
-								       if i%10 == 0 then
-								         print("Processed " .. i .. " items.")
-								         sleep(.1)
-								       end
-								       end
+									local keep = pushItem(uuid, count)
+									--print(count)
+										if ( keep == true ) then
+											for i=1, count do
+											   p.extract(dir,uuid,1,1)
+											   if i%10 == 0 then
+												 print("Processed " .. i .. " items.")
+												 sleep(.1)
+											   end
+											end
+										else
+											for i=1, count do
+											   p.extract(dir,uuid,0,1)
+											   if i%10 == 0 then
+												 print("Discarded " .. i .. " items.")
+												 sleep(.1)
+											   end
+											end
+										end
+
 							--	p.extract(dir,uuid,2,count)
 								else
 									cont = false
@@ -493,10 +506,14 @@ end
 
 doSave = function()
 	while (true) do
-		local tcount = tablelength(myItems)
-		if (myItems ~= nil and tcount > 0 ) then
-			serlTable(myItems, "stuff")
-			print( "Saving " .. tcount .. " items." )
+		if (myItems ~= nil ) then
+			local tcount = tablelength(myItems)
+			--print(tcount)
+			if ( tcount > 0 ) then
+				print( "Saving " .. tcount .. " items." )
+				serlTable(myItems, "stuff")
+			end
+			--
 		end
 		
 		sleep(5)
@@ -545,7 +562,7 @@ mainLoop = function()
 			b, ct, c = validateWeeblerMsg(message)
 			if  (b == true ) then
 				--print("Received a valid message, processing command: " .. message )
-				print("Received a message from " .. id)
+				--print("Received a message from " .. id)
 			--	transferContents( 2, 1)
 				processCmd( id, ct, c)
 				else
@@ -564,8 +581,7 @@ myItems = loadTable("stuff")
 if (myItems == nil ) then
 	myItems = {}
 end
-parallel.waitForAll (doSorter, doSave, mainLoop)
-
+parallel.waitForAll (doSave, mainLoop)
 
 
 
