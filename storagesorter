@@ -1,5 +1,7 @@
 local itemTable = {}
+local storageClusters = {}
 local screens = {}
+local myItems = {}
 -- Functions
 -- function serlTable(table,name)
   -- --local file = fs.open(name,"w")
@@ -480,8 +482,28 @@ function locateSorter()
 		end
 		return false, "no sorter found"
 end
+function pushCluster( computerid, resources )
+	local found = false
+	for k,v in pairs(storageClusters) do
+		if (k == computerid) then
+			found = true
+			storageClusters[computerid].lasttick = os.clock()
+			storageClusters[computerid].resources = resources
+			print("Found the entry for computer id " .. computerid )--. ", adding ".. amt .. "total is now ".. myItems[itemuuid].count)
+			return true
+		end
+	end
+	if (found ~= true) then
+		local newitem = {}
+		newitem.computerid = computerid
+		newitem.resources = resources
+		newitem.lasttick = os.clock()
+		table.insert(storageClusters, computerid, newitem) 
+		print("New index added for computer id " .. computerid)
+		return true
+	end
+end
 
-myItems = {}
 function pushItem( itemuuid, amt )
 	local found = false
 	for k,v in pairs(myItems) do
@@ -609,7 +631,7 @@ doSorter = function()
 end
 
 
-rednet.open("right")
+--rednet.open("right")
 
 mainLoop = function()
 	print ("Main loop started")
@@ -636,6 +658,20 @@ end
 
 
 print("Starting...")
+function initModem()
+		local dirs = { "top", "bottom", "back", "front", "left", "right" }
+		for i, dir in ipairs(dirs) do
+		  	if peripheral.isPresent(dir) and peripheral.getType(dir) == "modem" then
+				rednet.open(dir)
+				print("Found a modem on the " .. dir .. " side.")
+				return true
+			end
+		end
+		print("A modem must be attached for the storage interface application to function correctly.")
+		return false
+end
+local modemInit = initModem()
+if( modemInit ~= true ) then return end
 myItems = loadTable("stuff")
 if (myItems == nil ) then
 	myItems = {}
