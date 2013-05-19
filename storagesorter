@@ -31,7 +31,7 @@ local myItems = {}
 -- Config
 screenw,screenh = term.getSize()
 -- Config
-local program = "Storage Interface"
+local program = "Storage Sorter"
 local version = "v1.1"
 local author = "Horace"
 local systemFrequency = "Default"
