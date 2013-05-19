@@ -27,6 +27,59 @@ local itemTable = {}
 local storageClusters = {}
 local screens = {}
 local myItems = {}
+
+-- Config
+screenw,screenh = term.getSize()
+-- Config
+local program = "Storage Interface"
+local version = "v1.1"
+local author = "Horace"
+local systemFrequency = "Default"
+local systemSubfrequency = "A"
+
+local systemConfig = { [0] = { systemFrequency = systemFrequency, systemSubfrequency = systemSubfrequency }  }
+
+-- Functions
+function saveTableToFile(table,name)
+	local file = fs.open(name,"w")
+	file.write(textutils.serialize(table))
+	file.close()
+end
+
+function loadTableFromFile(name)
+	if ( fs.exists(name) ~= true ) then
+		return nil
+	end
+	local file = fs.open(name,"r")
+	local data = file.readAll()
+	file.close()
+	return textutils.unserialize(data)
+end
+
+function printReverse(str, xpos, ypos)
+	term.setCursorPos(xpos - (#str-1), ypos)
+	term.write (str)
+end
+
+function printForward(str, xpos, ypos)
+	term.setCursorPos(xpos, ypos)
+	term.write (str)
+end
+
+function printCentered(str, ypos)
+	term.setCursorPos(screenw/2 - #str/2, ypos)
+	term.write(str)
+end
+
+function printRight(str, ypos)
+	term.setCursorPos(screenw - #str, ypos)
+	term.write(str)
+end
+
+function printLeft(str, ypos)
+	term.setCursorPos(1, ypos)
+	term.write(str)
+end
 -- Functions
 -- function serlTable(table,name)
   -- --local file = fs.open(name,"w")
@@ -41,11 +94,9 @@ local myItems = {}
 	-- return textutils.unserialize(data)
 -- end
 
-function makemsg(idfrom, idto, msgType, msg)
+ function makemsg(idfrom, idto, msgType, msg)
 	local final = ""
-	--print(msg)
-	final = "HORACEV1|"  .. idfrom .. "|" .. idto .. "|" .. msgType .. "|" .. msg
-	--print(final)
+	final = "HORACEV1A|" .. systemConfig[0].systemFrequency .. "::" .. systemConfig[0].systemSubfrequency .. "|" .. idfrom .. "|" .. idto .. "|" .. msgType .."|" .. msg
 	return final
 end
 
@@ -317,49 +368,78 @@ function processCmd(idFrom, ct, cmd)
 end
 
 function validateWeeblerMsg( msg )
-	 --print("Validating message... " .. msg)
+	 --print("Validating message... ")
 	 local m = 0
 	 local ret = false
 	 local cmd = nill
 	 local cmdType = nill
-	 --print (msg)
-	 for i,v in pairs(explode("|", msg)) do
+	 local directedTo = 0
+	 for i,v in pairs(explode("|", message)) do
 		 if ( m == 0 ) then
-			 if( v == "HORACEV1" ) then
+			 if( v == "HORACEV1A" ) then
 				-- print("WeeblerV1 message: TRUE")
 				 else
 					 return ret
 			 end
 		 end
-		 if ( m == 1 ) then
-			 --print( "Msg From: " .. v )
+		 if ( m == 1 ) then -- this is our frequency/subfrequency area
+			local curFreq = systemConfig[0].systemFrequency .. "::" .. systemConfig[0].systemSubfrequency
+			if( v:lower() == curFreq:lower() ) then
+				else
+					return ret -- fail
+			end
 		 end
 		 if ( m == 2 ) then
-			
+			 --print( "Msg From: " .. v )
+		 end
+		 if ( m == 3 ) then
+			if( tonumber(v) == os.getComputerID() ) then
+				--print("Received a message to us! " .. msg)
+				directedTo = tonumber(v)
+
+			end
 			 if ( v ~= "0" and tonumber(v) ~= os.getComputerID() ) then
 				 --print( "Msg To: " .. v .. " which is not us, validation falied.")
+				 --directedTo = tonumber(v)
 				 return false
 				 else
 					 ret = true
 					
 			 end
 		 end
-		 if ( m == 3 ) then
-			-- print( "CmdType: " .. v )
-			 cmdType = v
+		 if ( m == 4 ) then
+			 --print( "CmdType: " .. v )
+			 ctype = v
 			 --cmd = v
 			 --return ret, cmd
 		 end
-		 if ( m == 4 ) then
+		 if ( m == 5 ) then
 			 --print( "Command: " .. v )
 			 cmd = v
-			 return ret, cmdType, cmd
+			 return ret, ctype, cmd, directedTo
 		 end
 		 --print("[" .. i .. "] = " .. v)
 		 m = m+1
 	 end
 	 return ret
  end
+ 
+ function loadTable(str)
+	--local file = fs.open(name,"r")
+	--local data = file.readAll()
+	--file.close()
+	return textutils.unserialize(str)
+end
+
+function sendCmd( toid, cmd )
+	if (toid == 0) then
+		rednet.broadcast(cmd)
+		else
+			rednet.send( toid, cmd )
+	end
+	
+end
+
 
 function table_print (tt, indent, done)
   done = done or {}
@@ -762,7 +842,12 @@ dumpLoop = function()
 end
 mainLoop = function()
 	print ("Storage Sorter process started")
-
+	local _config = loadTableFromFile("systemConfig")
+	if( _config == nil ) then
+		saveTableToFile( systemConfig, "systemConfig" )
+		else
+		systemConfig = _config
+	end
 	local msg = makemsg( os.getComputerID(), 0, "queryStorageClusters", "" )
 	sendCmd( 0, msg)
 	while true do
@@ -814,6 +899,5 @@ if ( os.getComputerLabel() == nil or os.getComputerLabel == "" ) then
 end
 redstone.setOutput("top", true)
 parallel.waitForAll (doSave, mainLoop, dumpLoop)
-
 
 
