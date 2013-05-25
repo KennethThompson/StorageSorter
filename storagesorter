@@ -150,7 +150,7 @@ function processQueryClusterListCmd(idFrom)
 		--print("Received a processQueryClusterListCmd")
 		-- --local st = queryStorage( s )
 		for id,value in pairs(storageClusters) do
-			if( os.clock() - value.lasttick > 30 ) then
+			if( os.clock() - value.lasttick > 300 ) then
 				value.online = false
 				else
 					value.online = true
